@@ -1,0 +1,323 @@
+package org.firstinspires.ftc.teamcode.EPIC.Robot;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.EPIC.Components.*;
+import org.firstinspires.ftc.teamcode.EPIC.EventListeners.*;
+import org.firstinspires.ftc.teamcode.EPIC.Motion.Mecanum_Wheels;
+import org.firstinspires.ftc.teamcode.EPIC.RobotStates.ArmStates;
+import org.firstinspires.ftc.teamcode.EPIC.RobotStates.ClawStates;
+import org.firstinspires.ftc.teamcode.EPIC.RobotStates.DriveStates;
+import org.firstinspires.ftc.teamcode.EPIC.RobotStates.SliderStates;
+import org.firstinspires.ftc.teamcode.EPIC.RobotStates.WristStates;
+import org.firstinspires.ftc.teamcode.EPIC.Sensors.MyColorRangeSensor;
+import org.firstinspires.ftc.teamcode.EPIC.Sensors.MyTouchSensor;
+
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+
+public class Robot implements IColorListener, ITouchListener, IClawListener, IArmListener, IWristListener, ISliderListener, IMecanumListener {
+
+    public Claw odysseyClaw;
+    public Slider_PIDF odysseySlider;
+    public Arm_PIDF odysseyArm;
+    public Wrist odysseyWrist;
+    public Mecanum_Wheels odysseyWheels;
+    public MyTouchSensor touchSensor;
+
+    public boolean isAutonomous = false;
+    private LinearOpMode parent;
+    private Telemetry telemetry;
+    private String alliance = "";
+    public MyColorRangeSensor colorSensor;
+
+    public Robot(LinearOpMode parent, String alliance, boolean isAuton) {
+        odysseyClaw = new Claw(parent.hardwareMap);
+        odysseySlider = new Slider_PIDF(parent.hardwareMap);
+        odysseyArm = new Arm_PIDF(parent.hardwareMap);
+        odysseyWrist = new Wrist(parent.hardwareMap);
+        if(!isAuton) {
+            odysseyWheels = new Mecanum_Wheels(parent.hardwareMap);
+        }
+        //colorSensor = new MyColorRangeSensor(parent.hardwareMap, alliance);
+        this.parent = parent;
+        this.telemetry = parent.telemetry;
+        this.alliance = alliance;
+    }
+
+
+
+    public void setIsAutonomous(boolean isAutonomous) {
+        this.isAutonomous = isAutonomous;
+        odysseyClaw.setIsAutonomous(isAutonomous);
+        odysseySlider.setIsAutonomous(isAutonomous);
+        odysseyArm.setIsAutonomous(isAutonomous);
+        odysseyWrist.setIsAutonomous(isAutonomous);
+    }
+
+    public void initialize() {
+        odysseyClaw.setParent(this.parent);
+        odysseySlider.setParent(this.parent);
+        odysseyArm.setParent(this.parent);
+        odysseyWrist.setParent(this.parent);
+        if(!isAutonomous) {
+            odysseyWheels.setParent(this.parent);
+        }
+        odysseyClaw.setTelemetry(this.telemetry);
+        odysseySlider.setTelemetry(this.telemetry);
+        odysseyArm.setTelemetry(this.telemetry);
+        odysseyWrist.setTelemetry(this.telemetry);
+        if(!isAutonomous) {
+            odysseyWheels.setTelemetry(this.telemetry);
+        }
+        odysseyArm.addArmListener(this);
+        odysseyWrist.addWristListener(this);
+        odysseySlider.addSliderListener(this);
+        if(!isAutonomous) {
+        odysseyWheels.addMecanumListener(this);
+        }
+        odysseyClaw.addClawListener(this);
+        //colorSensor.addColorListener(this);
+        odysseyClaw.initialize();
+        odysseySlider.initialize(0, 0, 0);
+        odysseyArm.initialize(0, 0, 0);
+        odysseyWrist.initialize();
+        if(!isAutonomous) {
+            odysseyWheels.initialize();
+        }
+    }
+
+    @Override
+    public void colorPicker(ColorEventObject event) {
+        if (this.parent.opModeIsActive()) {
+//
+        }
+    }
+
+    @Override
+    public void touchClicked(TouchEventObject event) {
+        if (this.parent.opModeIsActive()) {
+            Thread tc = new Thread() {
+                public void run() {
+
+                }
+            };
+            tc.start();
+        }
+    }
+
+    @Override
+    public void runClaw(ClawEventObject event) {
+        if (this.parent.opModeIsActive()) {
+            ClawStates newState = event.getNewState();
+            Thread tc = new Thread() {
+                public void run() {
+                    switch (newState) {
+                        case OPEN:
+                            try {
+                                Thread.sleep(100);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
+                            if (odysseyArm.stateArm == ArmStates.DEPOSITING) {
+                                try {
+                                    Thread.sleep(350);
+                                } catch (InterruptedException e) {
+                                    throw new RuntimeException(e);
+                                }
+                                odysseyArm.move(ArmStates.READY_TO_DEPOSIT);
+                            }
+                            break;
+                        case HOLDING_SAMPLE_PORTRAIT:
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            };
+            tc.start();
+        }
+    }
+
+    @Override
+    public void onArmMove(ArmEventObject event) {
+        if (parent.opModeIsActive()) {
+            ArmStates newState = event.getNewState();
+            //Robot parent = (Robot)  event.getSource();
+            Thread tc = new Thread() {
+                public void run() {
+                    switch (newState) {
+                        case LOWERED:
+                            try {
+                                Thread.sleep(50);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
+                            odysseyWrist.setPos(WristStates.DEPOSITING_SAMPLE);
+                            telemetry.addData("Arm Thread", "Ready to pickup sample");
+                            break;
+                        case INITIALIZED:
+                            System.out.println("Arm is initialized");
+                            break;
+                        case READY_TO_DEPOSIT:
+                            try {
+                                Thread.sleep(50);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
+                            odysseyWrist.setPos(WristStates.DEPOSITING_SAMPLE);
+                            try {
+                                Thread.sleep(250);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
+                            if ((odysseyClaw.stateClaw != ClawStates.OPEN) && (odysseySlider.stateSlider == SliderStates.RETRACTED)) {
+                                odysseyArm.move(ArmStates.DEPOSITING);
+                                try {
+                                    Thread.sleep(350);
+                                } catch (InterruptedException e) {
+                                    throw new RuntimeException(e);
+                                }
+                                //if(!parent.isAutonomous)
+                                //    odysseyClaw.move(ClawStates.OPEN);
+                            }
+                            telemetry.addData("Arm Thread", "Ready to deposit sample");
+                            break;
+                        case DEPOSITING:
+                            try {
+                                Thread.sleep(50);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
+                            odysseyWrist.setPos(WristStates.DEPOSITING_SAMPLE);
+                            telemetry.addData("Arm Thread", "Sample ready for deposit");
+                        case NEUTRAL:
+                            telemetry.addData("Arm Thread", "Arm is neutral");
+                            break;
+                        case SPECIMEN_DROP:
+                            try {
+                                Thread.sleep(50);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
+                            odysseyWrist.setPos(WristStates.SPECIMEN_DROP);
+                            telemetry.addData("Arm Thread", "Arm has dropped specimen");
+                            break;
+                        case SPECIMEN_PICK:
+                            try {
+                                Thread.sleep(250);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
+                            odysseyWrist.setPos(WristStates.SPECIMEN_PICK);
+                            break;
+                        default:
+                            System.out.println("Arm moved to an unknown state.");
+                            break;
+                    }
+                }
+            };
+            tc.start();
+        }
+    }
+
+    @Override
+    public void onWristMove(WristEventObject event) {
+        if (parent.opModeIsActive()) {// Implementing onWristMove method
+            WristStates newState = event.getNewState();
+            Thread tc = new Thread() {
+                public void run () {
+                    switch (newState) {
+                        case NEUTRAL:
+                            telemetry.addData("Wrist Thread", "Wrist at rest");
+                            break;
+                        case DEPOSITING_SAMPLE:
+                            if (odysseyClaw.stateClaw == ClawStates.HOLDING_SAMPLE_PORTRAIT
+                                    && odysseyArm.stateArm == ArmStates.LOWERED) {
+                                odysseyArm.move(ArmStates.HOLDING_SAMPLE);
+                            }
+                            break;
+                        case PICKING_UP_SAMPLE:
+                            telemetry.addData("Wrist Thread", "Ready to pickup sample");
+                        case INITIALIZING:
+                            break;
+                        case SPECIMEN_PICK:
+                            break;
+                        default:
+
+                            break;
+                    }
+                }
+            };
+            tc.start();
+        }
+    }
+
+    @Override
+    public void onSliderMove(SliderEventObject event) { //Threading Complete. Do not modify!
+        if (parent.opModeIsActive()) { // Ensure the opMode is active
+            SliderStates newState = event.getSliderState();
+
+            Thread tc = new Thread() {
+                public void run() {
+                    switch (newState) {
+                        case RETRACTED:
+                            telemetry.addData("Slider Thread", "Slider is retracted");
+                            break;
+                        case HIGH_BUCKET:
+                            telemetry.addData("Slider Thread", "Slider is at high bucket");
+                            break;
+                        case LOW_HANG:
+                            break;
+                        case LOW_HANG_START:
+                            telemetry.addData("Slider Thread", "Slider ready to hang! " +
+                                    " Get in position for hanging!");
+                            break;
+                        default:
+                            System.out.println("Slider moved to an unknown state.");
+                            break;
+                    }
+                }
+            };
+            tc.start();
+        }
+    }
+
+    @Override
+    public void mecanumActivity(MecanumEventObject event) {
+        if (parent.opModeIsActive()) {
+            DriveStates newState = event.getNewState();
+
+            Thread tc = new Thread() {
+                public void run () {
+                    switch (newState) {
+                        case IDLE:
+
+                            break;
+                        case ROTATED:
+
+                            break;
+                        case STRAFING_RIGHT:
+
+                            break;
+                        case STRAFING_LEFT:
+
+                            break;
+                        case INITIALIZED:
+
+                            break;
+                        case MOVE_FORWARDS:
+
+                            break;
+                        case MOVE_BACKWARDS:
+
+                            break;
+                        default:
+
+                            break;
+                    }
+                }
+            };
+            tc.start();
+        }
+    }
+}
