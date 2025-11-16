@@ -1,13 +1,14 @@
 package org.firstinspires.ftc.teamcode.Encoder_Auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.components.Arm;
 import org.firstinspires.ftc.teamcode.components.Claw;
 import org.firstinspires.ftc.teamcode.components.Mecanum_Wheels;
 import org.firstinspires.ftc.teamcode.components.Slides;
-
+@Disabled
 @Autonomous(name = "Right_Auto")
 public class Right_Auto extends LinearOpMode {
 

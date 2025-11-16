@@ -14,7 +14,7 @@ public class TeleOp_Odyssey extends LinearOpMode {
 
     Mecanum_Wheels wheels = null;//new Mecanum_Wheels(ha)
     public static double wristPos = 0;
-
+    public double shooterPower = 0;
 
 //    private DcMotorEx frontRight;
 //    private DcMotorEx frontLeft;
@@ -69,6 +69,13 @@ public class TeleOp_Odyssey extends LinearOpMode {
 
             double rightTrigger = gamepad2.right_trigger;
             double leftTrigger = gamepad2.left_trigger;
+            shooterPower=0;
+            if(rightTrigger!=0){
+                shooterPower = rightTrigger;
+            }
+            else if(leftTrigger!=0){
+                shooterPower = -leftTrigger;
+            }
 
             if(gamepad1.b) {
                 //frontRight.setPower(1);
@@ -122,8 +129,8 @@ public class TeleOp_Odyssey extends LinearOpMode {
 //            wheels.backright.setPower(0);
 //            wheels.backleft.setPower(0);
 
-            shooterLeft.setPower(rightTrigger);
-            shooterRight.setPower(rightTrigger);
+            shooterLeft.setPower(shooterPower);
+            shooterRight.setPower(shooterPower);
             spintakeBack.setPower(righty2);
             spintakeFront.setPower(lefty2);
 //            if(targetPos>=0){
