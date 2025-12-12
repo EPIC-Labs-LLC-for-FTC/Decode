@@ -18,8 +18,9 @@ public class Red_Left_Auto extends LinearOpMode {
     private DcMotorEx spintakeBack;
     private DcMotorEx shooterLeft;
     private DcMotorEx shooterRight;
-    double shooterPower = 1;
+    double shooterPower = 1*0.95;
     double spintakePower = 1;
+    int shooterSleep=100;
     @Override
     public void runOpMode() throws InterruptedException {
 
@@ -78,13 +79,40 @@ public class Red_Left_Auto extends LinearOpMode {
 //
 //            ldistance = 16;
 //            wheels.encoderDrive(1, ldistance, ldistance, -ldistance, -ldistance, 2);
+            //turn right
+            ldistance = 5;
+            wheels.encoderDrive(0.2,ldistance,ldistance,-ldistance,-ldistance,1);
 
             shooterLeft.setPower(shooterPower);
             shooterRight.setPower(shooterPower);
             sleep(2000);
             spintakeBack.setPower(spintakePower);
             spintakeFront.setPower(spintakePower);
-            sleep(10000);
+            sleep(shooterSleep);
+            spintakeBack.setPower(0);
+            spintakeFront.setPower(0);
+            sleep(2000);
+            spintakeBack.setPower(spintakePower);
+            spintakeFront.setPower(spintakePower);
+            sleep(shooterSleep);
+            spintakeBack.setPower(0);
+            spintakeFront.setPower(0);
+            sleep(2000);
+            spintakeBack.setPower(spintakePower);
+            spintakeFront.setPower(spintakePower);
+            sleep(shooterSleep);
+            spintakeBack.setPower(0);
+            spintakeFront.setPower(0);
+            sleep(2000);
+            spintakeBack.setPower(spintakePower);
+            spintakeFront.setPower(spintakePower);
+            sleep(shooterSleep);
+            spintakeBack.setPower(0);
+            spintakeFront.setPower(0);
+            sleep(2000);
+            spintakeBack.setPower(spintakePower);
+            spintakeFront.setPower(spintakePower);
+            //sleep(10000);
         }
     }
 }
